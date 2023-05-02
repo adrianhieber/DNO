@@ -119,6 +119,6 @@ def gradientDescent(F, F_nabla , x_0, a_0=2, sig=0.2, eps=0.01):
 
 
 if __name__ == "__main__":
-    #plotter()
-    gradientDescent(F=f1, F_nabla=f1_nabla, x_0=[-5,5]) 
+    plot()
+    #gradientDescent(F=f1, F_nabla=f1_nabla, x_0=[-5,5]) 
     
