@@ -1,4 +1,4 @@
-# author Adrian Hieber
+# Authors: Adrian Hieber, Luciano Melodia
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,15 +6,17 @@ import numpy as np
 # funtions
 f1 = lambda x: 5 * (x[0] ** 2) - 6 * x[0] * x[1] + 5 * (x[1] ** 2)
 f2 = lambda x: 100 * (x[1] - (x[0] ** 2)) ** 2 + (1 - x[0]) ** 2
+
+# gradients
 f1_nabla = lambda x: [10 * x[0] + -6 * x[1], -6 * x[0] + 10 * x[1]]
 f2_nabla = lambda x: [400 * (x[0] ** 3 - x[0] * x[1]), 200 * (x[1] - x[0] ** 2)]
 
+# norm function
 norm = lambda f: np.sqrt(f[0] ** 2 + f[1] ** 2)
 
 
-# plot all graphs
-def plot():
-    # init
+# Plot two and three dimensional graphs
+def plotGraphs2D3D():
     fig = plt.figure()
 
     ax_f1_3d = fig.add_subplot(2, 3, 1, projection="3d")
@@ -63,12 +65,17 @@ def check(F, F_nabla, x_0):
         raise Exception("F_nabla must be callable")
     if len(x_0) != 2:
         raise Exception("X_0 must be 2-dim vector")
-    # TODO check for numbers important (a,sig,eps)?
+
+
+def checkBlocks(x_0, s):
+    if s[0] < 0 or s[0] > s[1]:
+        raise Exception("Invalid length of coordinate blocks.")
+    if s[1] > len(x_0):
+        raise Exception("Length of coordinate blocks is too large.")
 
 
 # plot gradient
 def plotter(val):
-
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
 
@@ -91,41 +98,81 @@ def plotter(val):
     plt.show()
 
 
-# excs a1 i)
+# Gradientenastiegsverfahren
 def gradientDescent(F, F_nabla, x_0, a_0=2, sig=0.2, eps=0.01):
-    check(F, F_nabla, x_0)
+    check(F, F_nabla, x_0, x_0)
 
-    # init
+    # Initialisierung
     a_k = a_0
     x_k = x_0
     x_k1 = x_0
     f_x_k1 = float("inf")
-    j = 0
-    maxi = 50  # TODO just for test, no maxi!
-    plot = [np.empty(maxi) for i in range(3)]
 
-    # iterate til eps
-    while abs(f_x_k1 - F(x_k)) > eps and j < maxi:
-        # print(abs(f_x_k1 - F(x_k)))
-        plot[0][j] = x_k[0]
-        plot[1][j] = x_k[1]
-        plot[2][j] = F(x_k)
-        j = j + 1
-        # print(abs(f_x_k1 - F(x_k)))
+    # Iteriere bis gewünschte Genauigkeit erreicht ist
+    while abs(f_x_k1 - F(x_k)) > eps:
+        x_k = x_k1
         while F([x_k[i] - a_k * F_nabla(x_k)[i] for i in range(2)]) / norm(
             F_nabla(x_k)
         ) > F(x_k):
-            # adapt with sigma
+            # Verringere Schrittweise um Faktor sig
             a_k = sig * a_k
-        # update with largest
-        x_k = x_k1
+
+        # Update in Richtung des größten Gradientenabstiegs
         x_k1 = x_k - ([a_k * F_nabla(x_k)[i] for i in range(2)]) / norm(F_nabla(x_k))
         f_x_k1 = F(x_k1)
 
     print(f"End with x={x_k} and F(x)={F(x_k)}")
-    plotter(plot)
+
+    # Ausgabe des letzten Punktes
+    return x_k, F(x_k)
+
+
+# Koordinatenabstiegsverfahren
+def coordinateDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01, s=[0, 2]):
+    check(F, F_nabla, x_0)
+    checkBlocks(x_0, s)
+
+    # Initialisierung
+    a_k = a_0
+    x_k, x_k1 = x_0, x_0
+    s1, s2 = s[0], s[1]
+    f_x_k1 = float("inf")
+
+    # Iteriere bis gewünschte Genauigkeit erreicht ist
+    while abs(f_x_k1 - F(x_k)) > eps:
+        x_k = x_k1
+        while F([x_k[i] - a_k * F_nabla(x_k)[i] for i in range(s1, s2)]) / norm(
+            F_nabla(x_k)
+        ) > F(x_k):
+            # Verringere Schrittweise um Faktor sig
+            a_k = sig * a_k
+
+        # Update in Richtung des größten Gradientenabstiegs
+        x_k1 = x_k - ([a_k * F_nabla(x_k)[i] for i in range(s1, s2)]) / norm(
+            F_nabla(x_k)
+        )
+        f_x_k1 = F(x_k1)
+
+    print(f"End with x={x_k} and F(x)={F(x_k)}")
+
+    # Ausgabe des letzten Punktes
+    return x_k, F(x_k)
 
 
 if __name__ == "__main__":
-    # plot()
-    gradientDescent(F=f1, F_nabla=f1_nabla, x_0=[-5, 5])
+    # Plot two dimensional and three dimensional graph of functions
+    plotGraphs2D3D()
+
+    f1_values = [[-5, 5], [-3, 2]]
+    f2_values = [[0, 3], [2, 1]]
+
+    for v in f1_values:
+        gradientDescent(F=f1, F_nabla=f1_nabla, x_0=v)
+        coordinateDescent(F=f1, F_nabla=f1_nabla, x_0=v)
+        exit()
+        stochasticGradientDescent(F=f1, F_nabla=f1_nabla, x_0=v)
+
+    for v in f2_values:
+        gradientDescent(F=f2, F_nabla=f2_nabla, x_0=v)
+        coordinateDescent(F=f2, F_nabla=f2_nabla, x_0=v)
+        stochasticGradientDescent(F=f2, F_nabla=f2_nabla, x_0=v)
