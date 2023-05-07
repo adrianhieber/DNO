@@ -190,7 +190,7 @@ def stochasticGradientDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01):
             # Verringere Schrittweise um Faktor sig
             a_k = sig * a_k
 
-        # Update in Richtung des größten Gradientenabstiegs
+        # Update in Richtung des größten Gradientenabstiegs mit zufälligen Koordinatenrichtungen
         s1 = rd.randrange(0, len(x_0) - 1)
         s2 = rd.randrange(s1 + 1, len(x_0) + 1)
         x_k = x_k1
