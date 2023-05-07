@@ -78,9 +78,9 @@ def checkBlocks(x_0, s):
 
 
 # plot gradient
-def plotter(val):
+def plotter(val, title):
     fig = plt.figure()
-    ax = fig.add_subplot(projection="3d")
+    ax = fig.add_subplot(projection="3d", title=title)
 
     # Make the grid
     x, y, z = (
@@ -135,7 +135,7 @@ def gradientDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01):
         memory[2].append(f_x_k1)
 
     print(f"End with x={x_k1} and F(x)={F(x_k1)}")
-    plotter(memory)
+    plotter(memory, "gradientDescent")
 
     # Ausgabe des letzten Punktes
     return x_k1, F(x_k1)
@@ -151,6 +151,7 @@ def coordinateDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01, s=[0, 2]):
     x_k, x_k1 = x_0, x_0
     s1, s2 = s[0], s[1]
     f_x_k1 = float("inf")
+    memory = [[], [], []]
 
     # Iteriere bis gewünschte Genauigkeit erreicht ist
     while abs(f_x_k1 - F(x_k)) > eps:
@@ -166,9 +167,13 @@ def coordinateDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01, s=[0, 2]):
             F_nabla(x_k)
         )
         f_x_k1 = F(x_k1)
+        
+        memory[0].append(x_k1[0])
+        memory[1].append(x_k1[1])
+        memory[2].append(f_x_k1)
 
     print(f"End with x={x_k1} and F(x)={F(x_k1)}")
-
+    plotter(memory, "coordinateDescent")
     # Ausgabe des letzten Punktes
     return x_k1, F(x_k1)
 
@@ -204,7 +209,7 @@ def stochasticGradientDescent(F, F_nabla, x_0, a_0=0.01, sig=0.01, eps=0.01):
         memory[2].append(f_x_k1)
 
     print(f"End with x={x_k1} and F(x)={F(x_k1)}")
-    plotter(memory)
+    plotter(memory, "stochasticGradientDescent")
 
     # Ausgabe des letzten Punktes
     return x_k1, F(x_k1)
