@@ -105,7 +105,7 @@ def armijoLineSearch(F, F_nabla, x_k, alpha, d, y, rho=0.5, eps=1e-4):
 
 
 # we use Armijo-Goldstein-condition for this algorithm
-def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-4, max_iter=50):
+def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-6, max_iter=100):
     x = x_0
     y = F(x)
     dF = F_nabla(x)
@@ -117,18 +117,20 @@ def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-4, max_iter=50):
     curve_y = [y]
 
     while dF_norm > eps and count < max_iter:
-        print(count)
         alpha, y_k = armijoLineSearch(F, F_nabla, x, alpha, d, y)
         x_k = x + alpha * d
         dF_k = F_nabla(x_k)
 
-        beta = dF_k @ dF_k / dF @ dF
+        beta = (dF_k @ dF_k) / (dF @ dF)
         error = y - y_k
         x = x_k
         y = y_k
         dF = dF_k
         d = -dF + beta * d
         dF_norm = np.linalg.norm(dF)
+
+        if dF_norm <= eps:
+            print("Anzahl der Iterationen für eine Genauigkeit von 1e-6: " + str(count))
 
         count += 1
         curve_x.append(x)
