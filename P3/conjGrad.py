@@ -84,10 +84,6 @@ def conjugateGradient(A, b, x_0, eps=1e-6):
         curve_x.append(x_k)
         r_k_norm = np.linalg.norm(r_k)
 
-        print(
-            "Iteration: {} \t x = {} \t residual = {:.4f}".format(count, x_k, r_k_norm)
-        )
-
     return np.array(curve_x)
 
 
