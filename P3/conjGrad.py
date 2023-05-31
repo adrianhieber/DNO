@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from itertools import product
+from matplotlib.ticker import MaxNLocator
 
 
 def f(x):
@@ -40,20 +41,25 @@ def plot_conjugateGradient_solution(sol):
     plt.show()
 
 
-def plot_conjugateGradientNL_solution(sol):
+def plot_conjugateGradientNL_solution(sol_x, sol_y):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
     plt.suptitle("Conjugate Non-Linear Gradient")
 
-    ax1.plot(sol[0][:, 0], sol[0][:, 1], linestyle="--", marker="o", color="orange")
-    ax1.plot(sol[0][-1, 0], sol[0][-1, 1], "ro")
+    ax1.plot(sol_x[:, 0], sol_x[:, 1], linestyle="--", marker="o", color="orange")
+    ax1.plot(sol_x[-1, 0], sol_x[-1, 1], "ro")
     ax1.set(title="Path During Optimization", xlabel="x1", ylabel="x2")
+    
+    x = np.arange(-5, 5, 0.025)
+    y = np.arange(-5, 5, 0.025)
+    X, Y = np.meshgrid(x, y)
+    Z = np.zeros(X.shape)
 
     CS = ax1.contour(X, Y, Z)
     ax1.clabel(CS, fontsize="smaller", fmt="%1.2f")
     ax1.axis("square")
 
-    ax2.plot(sol[1], linestyle="--", marker="o", color="orange")
-    ax2.plot(len(sol[1]) - 1, sol[1][-1], "ro")
+    ax2.plot(sol_y, linestyle="--", marker="o", color="orange")
+    ax2.plot(len(sol_y) - 1, sol_y[-1], "ro")
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax2.set(
         title="OF Value During Optimization", xlabel="Iterations", ylabel="OF Value"
@@ -88,7 +94,6 @@ def conjugateGradient(A, b, x_0, eps=1e-6):
 
 
 def armijoLineSearch(F, F_nabla, x_k, alpha, d, y, rho=0.5, eps=1e-4):
-    print(F_nabla(x_k).T)
     dy = F_nabla(x_k).T @ d
     y_k = F(x_k + alpha * d)
 
@@ -100,7 +105,7 @@ def armijoLineSearch(F, F_nabla, x_k, alpha, d, y, rho=0.5, eps=1e-4):
 
 
 # we use Armijo-Goldstein-condition for this algorithm
-def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-6, max_iter=500):
+def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-4, max_iter=50):
     x = x_0
     y = F(x)
     dF = F_nabla(x)
@@ -112,6 +117,7 @@ def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-6, max_iter=500):
     curve_y = [y]
 
     while dF_norm > eps and count < max_iter:
+        print(count)
         alpha, y_k = armijoLineSearch(F, F_nabla, x, alpha, d, y)
         x_k = x + alpha * d
         dF_k = F_nabla(x_k)
@@ -128,7 +134,7 @@ def conjugateGradientNL(F, F_nabla, x_0, alpha=1.0, eps=1e-6, max_iter=500):
         curve_x.append(x)
         curve_y.append(y)
 
-    return np.array([np.array(curve_x), np.array(curve_y)])
+    return np.array(curve_x), np.array(curve_y)
 
 
 # symmetric, positive definite matrix A
@@ -145,5 +151,5 @@ F_nabla = lambda x: np.array([2 * (x[0] + x[1]), 2 * (x[0] + x[1]) + 3 * np.cos(
 x_0 = np.array([-5, -5])
 alpha_0 = 1
 
-sol = conjugateGradientNL(F, F_nabla, x_0, alpha_0)
-plot_conjugateGradientNL_solution(sol)
+sol_x, sol_y = conjugateGradientNL(F, F_nabla, x_0, alpha_0)
+plot_conjugateGradientNL_solution(sol_x, sol_y)
