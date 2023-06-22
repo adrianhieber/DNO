@@ -63,25 +63,37 @@ def plot(title, an, ex, steps):
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     
-    t=list(range(steps))
-    x_an=[an[t][0] for t in range(steps)]
-    y_an=[an[t][1] for t in range(steps)]
-    data = [x_an, y_an, t]
+    t=np.array(list(range(steps)))
+    x_an=np.array([an[t][0] for t in range(steps)])
+    y_an=np.array([an[t][1] for t in range(steps)])
+    data_an = np.array([x_an, y_an, t])
     
-    x_ex=[ex[t][0] for t in range(steps)]
-    y_ex=[ex[t][1] for t in range(steps)]
-     
+    x_ex=np.array([ex[t][0] for t in range(steps)])
+    y_ex=np.array([ex[t][1] for t in range(steps)])
     
-    plot_ex, =ax.plot(x_ex, y_ex, t, label="ex")
-    plot_an, =ax.plot(x_an, y_an, t, label="an")
+    ax.plot(x_ex, y_ex, t, label="instant ex")
+    #ax.plot(x_an, y_an, t, label="instant an")
+    
 
     
+    def update(num, data, line):
+        line.set_data(data[:2, :num])
+        line.set_3d_properties(data[2, :num])
+
+    line_an, = ax.plot(data_an[0, 0:1], data_an[1, 0:1], data_an[2, 0:1], label="An")
+
+    # Setting the axes properties
+    ax.set_xlim3d([-1.0, 1.0])
     ax.set_xlabel('X')
 
+    ax.set_ylim3d([-1.0, 1.0])
     ax.set_ylabel('Y')
 
-    ax.set_zlabel('Z')
-    #ax.legend()
+    ax.set_zlim3d([0.0, 100.0])
+    ax.set_zlabel('t')
+
+    ani = animation.FuncAnimation(fig, update, steps, fargs=(data_an, line_an), interval=10000/steps, blit=False)
+    #ani.save('matplot003.gif', writer='imagemagick')
     plt.show()
     
     
