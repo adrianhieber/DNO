@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-from mpl_toolkits.mplot3d import Axes3D
+from scipy.optimize import fsolve
 
 
 def exEuler(u_0, F, tau, steps):
@@ -13,21 +13,29 @@ def exEuler(u_0, F, tau, steps):
     u.append(u_tk)
 
     for k in range(1, steps):
-        # print(f"u_tk: {u_tk}")
         tk = k * tau
-        # print("tk:",tk)
-        # F=F(tk, u_tk)
-        Fau = F(tk, u_tk)
-        # cprint(f"F: {Fau}")
-        u_tk = u_tk + tau * Fau
+        Func = F(tk, u_tk)
+        u_tk = u_tk + tau * Func
         u.append(u_tk)
 
     return u
 
 
-def imEuler():
-    # TODO
-    pass
+def imEuler(u_0, F, tau, steps):
+    if tau <= 0:
+        raise Exception("tau has to be larger than 0")
+
+    u = []
+    u_tk = u_0
+    u.append(u_tk)
+
+    for k in range(1, steps):
+        tk = k * tau
+        tosolve = lambda u_tk1: u_tk1 - u_tk - tau * F(tk, u_tk1) 
+        u_tk = fsolve(tosolve, np.array([0,0]))
+        u.append(u_tk)
+
+    return u
 
 
 # test functions
@@ -49,8 +57,8 @@ def tester():
     a_F = lambda t, u_t: a_du(u_t)
     a_an_u = np.array([np.array([np.sin(t), np.cos(t)]) for t in range(steps)])
     a_ex_u = exEuler(a_u0, a_F, tau, steps)
-    # TODO a_im_u = imEuler(...)
-    plot("Aufgabe a", a_an_u, a_ex_u, steps)
+    a_im_u = imEuler(a_u0, a_F, tau, steps)
+    plot("Aufgabe a", a_an_u, a_ex_u, a_im_u, steps)
 
     # b
     b_F = lambda t, u_t: b_du(u_t)
@@ -70,18 +78,18 @@ def tester():
         ]
     )
     b_ex_u = exEuler(b_u0, b_F, tau, steps)
-    # TODO b_im_u = imEuler(...)
-    plot("Aufgabe b", b_an_u, b_ex_u, steps)
+    b_im_u = imEuler(b_u0, b_F, tau, steps)
+    plot("Aufgabe b", b_an_u, b_ex_u, b_im_u, steps)
 
     # c
     c_F = lambda t, u_t: c_du(u_t)
     c_an_u = np.array([np.array([np.sin(t), np.cos(t) ** 2]) for t in range(steps)])
     c_ex_u = exEuler(c_u0, c_F, tau, steps)
-    # TODO c_im_u = imEuler(...)
-    plot("Aufgabe c", c_an_u, c_ex_u, steps)
+    c_im_u = imEuler(c_u0, c_F, tau, steps)
+    plot("Aufgabe c", c_an_u, c_ex_u, c_im_u, steps)
 
 
-def plot(title, an, ex, steps):
+def plot(title, an, ex, im, steps):
     fig = plt.figure(label=title)
     ax = fig.add_subplot(projection="3d")
 
@@ -93,12 +101,19 @@ def plot(title, an, ex, steps):
     x_ex = np.array([ex[t][0] for t in range(steps)])
     y_ex = np.array([ex[t][1] for t in range(steps)])
     data_ex = np.array([x_ex, y_ex, t])
+    
+    x_im = np.array([im[t][0] for t in range(steps)])
+    y_im = np.array([im[t][1] for t in range(steps)])
+    data_im = np.array([x_im, y_im, t])
 
     (line_an,) = ax.plot(
         data_an[0, 0:1], data_an[1, 0:1], data_an[2, 0:1], label="Analytisch"
     )
     (line_ex,) = ax.plot(
         data_ex[0, 0:1], data_ex[1, 0:1], data_ex[2, 0:1], label="Explizit"
+    )
+    (line_im,) = ax.plot(
+        data_im[0, 0:1], data_im[1, 0:1], data_im[2, 0:1], label="Implizit"
     )
 
     def update(num, data, line):
@@ -107,6 +122,9 @@ def plot(title, an, ex, steps):
 
         line_an.set_data(data_an[:2, :num])
         line_an.set_3d_properties(data_an[2, :num])
+        
+        line_im.set_data(data_im[:2, :num])
+        line_im.set_3d_properties(data_im[2, :num])
 
     # Setting the axes properties
     ax.set_xlim3d([-1.0, 1.0])
