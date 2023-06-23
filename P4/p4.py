@@ -31,8 +31,8 @@ def imEuler(u_0, F, tau, steps):
 
     for k in range(1, steps):
         tk = k * tau
-        tosolve = lambda u_tk1: u_tk1 - u_tk - tau * F(tk, u_tk1) 
-        u_tk = fsolve(tosolve, np.array([0,0]))
+        tosolve = lambda u_tk1: u_tk1 - u_tk - tau * F(tk, u_tk1)
+        u_tk = fsolve(tosolve, np.array([0, 0]))
         u.append(u_tk)
 
     return u
@@ -101,7 +101,7 @@ def plot(title, an, ex, im, steps):
     x_ex = np.array([ex[t][0] for t in range(steps)])
     y_ex = np.array([ex[t][1] for t in range(steps)])
     data_ex = np.array([x_ex, y_ex, t])
-    
+
     x_im = np.array([im[t][0] for t in range(steps)])
     y_im = np.array([im[t][1] for t in range(steps)])
     data_im = np.array([x_im, y_im, t])
@@ -122,7 +122,7 @@ def plot(title, an, ex, im, steps):
 
         line_an.set_data(data_an[:2, :num])
         line_an.set_3d_properties(data_an[2, :num])
-        
+
         line_im.set_data(data_im[:2, :num])
         line_im.set_3d_properties(data_im[2, :num])
 
@@ -141,7 +141,7 @@ def plot(title, an, ex, im, steps):
         fig, update, steps, fargs=(data_an, line_an), interval=10000 / steps, blit=False
     )
     plt.show()
-
+    
 
 if __name__ == "__main__":
     tester()
